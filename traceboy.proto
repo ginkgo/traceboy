@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message TracePacket {
+	uint32 game_rom_crc32 =1;
+
+	bytes start_state = 2;
+	bytes user_inputs = 3;
+
+	uint32 end_state_crc32 = 4;
+}
+
+message Empty {
+}
+
+service TraceDB {
+	rpc Submit(TracePacket) returns (Empty);
+
+}

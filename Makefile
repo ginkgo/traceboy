@@ -1,22 +1,19 @@
 
 GRPC_CPP_PLUGIN_PATH ?= `which grpc_cpp_plugin`
 
-CPPFLAGS += --std=c++23 -Igen `pkg-config --cflags protobuf grpc` -Os
-LFLAGS += `pkg-config --libs --static protobuf grpc++`
+CFLAGS = -Igen -O0 -ggdb
+LFLAGS = -lprotobuf-c -lzmq -lssl -lcrypto
 
-all: bin/server bin/cxxclient
+all: bin/server bin/client bin/verification
 
 gen/traceboy.pb-c.c gen/traceboy.pb-c.h: traceboy.proto
 	protoc-c --c_out gen/ traceboy.proto
 
-gen/traceboy.pb.cc gen/traceboy.pb.h: traceboy.proto
-	protoc --cpp_out gen/ traceboy.proto
+bin/server: gen/traceboy.pb-c.c gen/traceboy.pb-c.h server/server.c
+	gcc $(CFLAGS) $(LFLAGS) server/server.c gen/traceboy.pb-c.c -o bin/server
 
-gen/traceboy.grpc.pb.cc gen/traceboy.grpc.pb.h: traceboy.proto
-	protoc --plugin=protoc-gen-grpc=$(GRPC_CPP_PLUGIN_PATH) --grpc_out gen/ traceboy.proto
+bin/client: gen/traceboy.pb-c.c gen/traceboy.pb-c.h client/client.c
+	gcc $(CFLAGS) $(LFLAGS) client/client.c gen/traceboy.pb-c.c -o bin/client
 
-bin/cxxclient: gen/traceboy.pb.cc gen/traceboy.pb.h gen/traceboy.grpc.pb.cc gen/traceboy.grpc.pb.h client/cxxclient.cpp
-	g++ $(CPPFLAGS) $(LFLAGS) client/cxxclient.cpp gen/traceboy.pb.cc gen/traceboy.grpc.pb.cc -o bin/cxxclient
-
-bin/server: gen/traceboy.pb.cc gen/traceboy.pb.h gen/traceboy.grpc.pb.cc gen/traceboy.grpc.pb.h server/server.cpp
-	g++ $(CPPFLAGS) $(LFLAGS) server/server.cpp gen/traceboy.pb.cc gen/traceboy.grpc.pb.cc -o bin/server
+bin/verification: gen/traceboy.pb-c.c gen/traceboy.pb-c.h verification/verification.c
+	gcc $(CFLAGS) $(LFLAGS) verification/verification.c gen/traceboy.pb-c.c -o bin/verification

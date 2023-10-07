@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <sameboy/gb.h>
 
@@ -78,7 +79,7 @@ int verify_trace_packet(const TracePacket *trace_packet)
 		palette.colors[i].b = i;
 	}
 
-	uint32_t pixels[512*512];
+	uint32_t pixels[128*128];
 
 
 	GB_gameboy_t *gb = GB_init(GB_alloc(), GB_MODEL_DMG_B);
@@ -123,10 +124,19 @@ int verify_trace_packet(const TracePacket *trace_packet)
 	GB_set_pixels_output(gb, pixels);
 
 	/* Simulate user inputs */
+	struct timespec t1,t2;
+	clock_gettime(CLOCK_MONOTONIC, &t1);
 	for (size_t i = 0; i < trace_packet->user_inputs.len; ++i)
 	{
 		GB_set_key_mask(gb, trace_packet->user_inputs.data[i]);
 		GB_run_frame(gb);
+	}
+	clock_gettime(CLOCK_MONOTONIC, &t2);
+
+	{
+		double secs = (t2.tv_sec - t1.tv_sec) + (t2.tv_nsec - t1.tv_nsec) / 1000000000.0;
+		printf("Simulation time %.2fs (%.2fx real-time)\n", secs,
+			   (trace_packet->user_inputs.len / 60.)/secs);
 	}
 
 	uint32_t end_state_crc32;

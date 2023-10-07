@@ -82,26 +82,30 @@ int verify_trace_packet(const TracePacket *trace_packet)
 
 
 	GB_gameboy_t *gb = GB_init(GB_alloc(), GB_MODEL_DMG_B);
+	if (!gb)
+	{
+		printf("Failed to allocate and init GB context\n");
+		return 1;
+	}
 
 	{
 		error = GB_load_boot_rom(gb, "external/sameboy/BootROMs/dmg_boot.bin");
-
 		if (error)
 		{
 			printf("Failed to load boot ROM\n");
-			return error;
+			goto end;
 		}
 
 		char rom_path[32];
 		int len = snprintf(rom_path, sizeof(rom_path),
 						   "rom_index/%08x", trace_packet->game_rom_crc32);
 		assert(len == 18);
-		error = GB_load_rom(gb, rom_path);
 
+		error = GB_load_rom(gb, rom_path);
 		if (error)
 		{
 			printf("Failed to load packet ROM %s\n", rom_path);
-			return error;
+			goto end;
 		}
 		else
 		{
@@ -125,15 +129,31 @@ int verify_trace_packet(const TracePacket *trace_packet)
 		GB_run_frame(gb);
 	}
 
+	uint32_t end_state_crc32;
 	{
 		uint8_t buffer[1024*1024];
 		size_t len = GB_get_save_state_size(gb);
 		GB_save_state_to_buffer(gb, buffer);
 
-		printf("end-state CRC: %08x\n", calc_crc32(len, buffer));
+		end_state_crc32 = calc_crc32(len, buffer);
+		printf("end-state CRC: %08x\n", end_state_crc32);
 	}
 
+	if (end_state_crc32 == trace_packet->end_state_crc32)
+	{
+		printf("end-state CRC match!\n");
+		error = 0;
+	}
+	else
+	{
+		printf("end-state CRC mismatch!\n");
+		error = 1;
+	}
+
+end:
+
 	GB_free(gb);
+	return error;
 }
 
 int main (int argc, char **argv)

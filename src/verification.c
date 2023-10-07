@@ -71,17 +71,6 @@ int verify_trace_packet(const TracePacket *trace_packet)
 {
 	int error;
 
-	GB_palette_t palette;
-	for (uint8_t i = 0; i < NELEMS(palette.colors); ++i)
-	{
-		palette.colors[i].r = i;
-		palette.colors[i].g = i;
-		palette.colors[i].b = i;
-	}
-
-	uint32_t pixels[128*128];
-
-
 	GB_gameboy_t *gb = GB_init(GB_alloc(), GB_MODEL_DMG_B);
 	if (!gb)
 	{
@@ -120,14 +109,21 @@ int verify_trace_packet(const TracePacket *trace_packet)
 										  trace_packet->start_state.len);
 	}
 
-	GB_set_palette(gb, &palette);
+	uint32_t pixels[256*256];
 	GB_set_pixels_output(gb, pixels);
+	GB_set_rendering_disabled(gb, true);
 
 	/* Simulate user inputs */
 	struct timespec t1,t2;
 	clock_gettime(CLOCK_MONOTONIC, &t1);
 	for (size_t i = 0; i < trace_packet->user_inputs.len; ++i)
 	{
+		if (i+1 == trace_packet->user_inputs.len)
+		{
+			/* Re-enable rendering for last frame to get correct state */
+			GB_set_rendering_disabled(gb, false);
+		}
+
 		GB_set_key_mask(gb, trace_packet->user_inputs.data[i]);
 		GB_run_frame(gb);
 	}

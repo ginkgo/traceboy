@@ -12,7 +12,7 @@
 
 #define NELEMS(a) (sizeof(a)/sizeof(a[0]))
 
-static uint32_t calc_crc32(size_t size, const uint8_t *byte)
+uint32_t calc_crc32(size_t size, const uint8_t *byte)
 {
     static const uint32_t table[] = {
         0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419, 0x706AF48F,

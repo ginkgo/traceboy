@@ -20,8 +20,8 @@ clean:
 gen/traceboy.pb-c.c gen/traceboy.pb-c.h: traceboy.proto
 	protoc-c --c_out gen/ traceboy.proto
 
-bin/server: obj/server.o obj/traceboy.pb-c.o
-	gcc $(LFLAGS) obj/server.o obj/traceboy.pb-c.o -o bin/server
+bin/server: obj/server.o obj/verification.o obj/traceboy.pb-c.o
+	gcc $(LFLAGS) obj/server.o obj/verification.o obj/traceboy.pb-c.o  $(SAMEBOYDIR)/lib/libsameboy.a -o bin/server
 
 bin/client: obj/client.o obj/traceboy.pb-c.o
 	gcc $(LFLAGS) obj/client.o obj/traceboy.pb-c.o -o bin/client

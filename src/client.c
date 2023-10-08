@@ -32,7 +32,7 @@ int main (void)
 
 	struct timespec t1,t2;
 	clock_gettime(CLOCK_MONOTONIC, &t1);
-	zmq_send (requester, packed_msg, packed_size, ZMQ_DONTWAIT);
+	zmq_send (requester, packed_msg, packed_size, 0);
 	zmq_recv (requester, 0,0,0);
 	clock_gettime(CLOCK_MONOTONIC, &t2);
 

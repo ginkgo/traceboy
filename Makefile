@@ -7,7 +7,7 @@ CC = gcc
 CFLAGS = -Igen -I$(SAMEBOYDIR)/include -O2 -ggdb
 LFLAGS = -lprotobuf-c -lzmq -lssl -lcrypto -lm
 
-obj/%.o: src/%.c
+obj/%.o: src/%.c gen/traceboy.pb-c.h
 	gcc -c $(CFLAGS) -o $@ $<
 obj/%.o: gen/%.c
 	gcc -c $(CFLAGS) -o $@ $<

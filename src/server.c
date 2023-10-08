@@ -55,11 +55,24 @@ int dump_buffer(uint8_t *buffer, size_t len) {
     return 0;
 }
 
-int process_packet(void* vpacket)
+struct message_buffer
 {
-	TracePacket *trace_packet = (TracePacket*)vpacket;
+	size_t size;
+	uint8_t data[];
+};
 
-	printf("Received packet:\n");
+int process_packet(void* buffer)
+{
+	struct message_buffer *msg_buffer = buffer;
+	TracePacket *trace_packet = trace_packet__unpack(NULL, msg_buffer->size, msg_buffer->data);
+
+	if (!trace_packet)
+	{
+		printf("Received packet(%uB), but failed to decode.\n", msg_buffer->size);
+		return 1;
+	}
+
+	printf("Received packet(%uB):\n", msg_buffer->size);
 	printf("  game_rom_crc32: %08x\n", trace_packet->game_rom_crc32);
 	printf("  start_state: %u bytes\n", trace_packet->start_state.len);
 	printf("  start_state_crc32: %08x\n",
@@ -69,20 +82,15 @@ int process_packet(void* vpacket)
 	printf("  end_state_crc32: %08x\n", trace_packet->end_state_crc32);
 
 	int error = verify_trace_packet(trace_packet);
-
 	if (!error)
 	{
-		size_t packed_size = trace_packet__get_packed_size(trace_packet);
-		uint8_t *packed_msg = malloc(packed_size);
-		trace_packet__pack(trace_packet, packed_msg);
-
-		dump_buffer(packed_msg, packed_size);
-
-		free(packed_msg);
+		dump_buffer(msg_buffer->data, msg_buffer->size);
 	}
 
 	printf("\n");
 
+	trace_packet__free_unpacked(trace_packet, NULL);
+	free(buffer);
 	return error;
 }
 
@@ -92,47 +100,45 @@ int main (void)
     void *context = zmq_ctx_new ();
     void *responder = zmq_socket (context, ZMQ_REP);
     int rc = zmq_bind (responder, "tcp://*:1989");
-    assert (rc == 0);
+
+	if (rc != 0)
+	{
+		printf("Failed to bind to port 1989. (Other server running?)\n");
+		return 0;
+	}
 
 	thrd_t threads[8] = {0};
 	size_t current_thread = 0;
 
-	const size_t buf_size = 1024*1024;
-	uint8_t *buffer = malloc(buf_size);
+    while (1)
+	{
+		const size_t MSG_BUFFER_SIZE = 1024*1024 - sizeof(size_t);
+		struct message_buffer *buffer = malloc(sizeof(size_t) + MSG_BUFFER_SIZE);
 
-    while (1) {
-        int len = zmq_recv (responder, buffer, buf_size, 0);
+		if (buffer == 0)
+		{
+			printf("Failed to allocate message buffer\n");
+			return 1;
+		}
+
+        buffer->size = zmq_recv (responder, buffer->data, MSG_BUFFER_SIZE, 0);
 		zmq_send(responder, NULL, 0, 0);
 
-		if (len < 0)
+		if (buffer->size < 0)
 		{
-			printf("Failed to receive packet %d, %d\n", len, (int)errno);
+			printf("Failed to receive packet %d, %d\n", buffer->size, (int)errno);
 			continue;
 		}
 
-		TracePacket *trace_packet = trace_packet__unpack(NULL, len, buffer);
-
-		if (trace_packet)
+		if (threads[current_thread])
 		{
-			if (threads[current_thread])
-			{
-				int res;
-				thrd_join(threads[current_thread], &res);
-			}
-
-			thrd_create(&threads[current_thread], process_packet, trace_packet);
-
-			trace_packet__free_unpacked(trace_packet, NULL);
-
-			current_thread = (current_thread + 1) % NELEMS(threads);
+			int res;
+			thrd_join(threads[current_thread], &res);
 		}
-		else
-		{
-			printf("Received packet(%uB), but failed to decode.\n", len);
-		}
+
+		thrd_create(&threads[current_thread], process_packet, buffer);
+		current_thread = (current_thread + 1) % NELEMS(threads);
     }
-
-	free(buffer);
 
 	for (size_t i = 0; i < NELEMS(threads); ++i)
 	{

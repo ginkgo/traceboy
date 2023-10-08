@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
+#include <threads.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <sameboy/gb.h>
 
@@ -67,6 +68,14 @@ uint32_t calc_crc32(size_t size, const uint8_t *byte)
     return ~ret;
 }
 
+thread_local GB_vblank_type_t vblank_type;
+
+
+static void vblank(GB_gameboy_t *gb, GB_vblank_type_t type)
+{
+	vblank_type = type;
+}
+
 int verify_trace_packet(const TracePacket *trace_packet)
 {
 	int error;
@@ -77,6 +86,8 @@ int verify_trace_packet(const TracePacket *trace_packet)
 		printf("Failed to allocate and init GB context\n");
 		return 1;
 	}
+
+	GB_set_vblank_callback(gb, (GB_vblank_callback_t) vblank);
 
 	{
 		error = GB_load_boot_rom(gb, "external/sameboy/BootROMs/dmg_boot.bin");
@@ -111,21 +122,33 @@ int verify_trace_packet(const TracePacket *trace_packet)
 
 	uint32_t pixels[256*256];
 	GB_set_pixels_output(gb, pixels);
-	GB_set_rendering_disabled(gb, true);
+	/* GB_set_rendering_disabled(gb, true); */
+
+	size_t iterations = 0;
 
 	/* Simulate user inputs */
 	struct timespec t1,t2;
 	clock_gettime(CLOCK_MONOTONIC, &t1);
 	for (size_t i = 0; i < trace_packet->user_inputs.len; ++i)
 	{
-		if (i+1 == trace_packet->user_inputs.len)
-		{
-			/* Re-enable rendering for last frame to get correct state */
-			GB_set_rendering_disabled(gb, false);
-		}
+		/* if (i+1 == trace_packet->user_inputs.len) */
+		/* { */
+		/* 	/\* Re-enable rendering for last frame to get correct state *\/ */
+		/* 	GB_set_rendering_disabled(gb, false); */
+		/* } */
 
 		GB_set_key_mask(gb, trace_packet->user_inputs.data[i]);
-		GB_run_frame(gb);
+
+		do {
+			GB_run_frame(gb);
+
+			if (iterations++ > trace_packet->user_inputs.len * 3)
+			{
+				printf("Hang during evaluation!\n");
+				error = 1;
+				goto end;
+			}
+		} while (vblank_type != GB_VBLANK_TYPE_NORMAL_FRAME);
 	}
 	clock_gettime(CLOCK_MONOTONIC, &t2);
 

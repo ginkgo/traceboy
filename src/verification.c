@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #include <sameboy/gb.h>
-
 #include <traceboy.pb-c.h>
 
 #define NELEMS(a) (sizeof(a)/sizeof(a[0]))
@@ -68,9 +67,7 @@ uint32_t calc_crc32(size_t size, const uint8_t *byte)
     return ~ret;
 }
 
-thread_local GB_vblank_type_t vblank_type;
-
-
+static thread_local GB_vblank_type_t vblank_type;
 static void vblank(GB_gameboy_t *gb, GB_vblank_type_t type)
 {
 	vblank_type = type;

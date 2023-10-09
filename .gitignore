@@ -4,3 +4,5 @@ gen/*
 obj/*
 rom_index/*
 traces/*
+webps/*.webp
+sameboy

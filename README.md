@@ -29,6 +29,8 @@ The main usecase for something like this would be for collecting large amounts o
 machine learning, but I can also imagine this being useful as a data format for tool-assisted speedruns or as part of
 a rewind system.
 
+It can also be used to generate [cute video walls of various gameplay snippets](https://ginkgo.github.io/traceboy/). :)
+
 In a perfect world I'd like to see tracing functionality added to popular emulators so a large number of users could (optionally)
 send their gameplay data to a central collection server.
 The collected data could be made publically available so people could use it for training.

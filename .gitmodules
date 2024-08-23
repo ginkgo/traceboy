@@ -1,0 +1,3 @@
+[submodule "external/SameBoy"]
+	path = external/SameBoy
+	url = git@github.com:ginkgo/SameBoy.git

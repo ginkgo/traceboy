@@ -1,6 +1,4 @@
 bin/*
-external/sameboy/*
 gen/*
 obj/*
 webps/*.webp
-sameboy

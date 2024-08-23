@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Grid</title>
+    <style>
+        body {
+            background-color: #333; /* Dark grey background */
+            margin: 0;
+            padding: 0;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 480px); /* Adjust as needed */
+            grid-gap: 20px; /* Adjust the gap between images */
+            justify-content: center; /* Center the grid horizontally */
+            padding: 20px; /* Add padding to the grid container */
+        }
+
+        .image-grid img {
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated; /* Use nearest-neighbor filtering for scaling */
+            width: 100%; /* Ensure the image doesn't exceed its container width */
+            transform: scale(1);
+            transform-origin: top left; /* Set the scaling origin */
+        }
+    </style>
+</head>
+<body>
+    <div class="image-grid">
+        <!-- Images will be added here dynamically -->
+    </div>
+
+    <script>
+        // Function to load filenames from a text file
+        function loadImagesFromFile(fileUrl) {
+            fetch(fileUrl)
+                .then(response => response.text())
+                .then(data => {
+                    const imageGrid = document.querySelector('.image-grid');
+                    const filenames = data.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+                    
+                    filenames.forEach(imageUrl => {
+                        const img = document.createElement('img');
+                        img.src = imageUrl;
+                        imageGrid.appendChild(img);
+                    });
+                })
+                .catch(err => console.error('Error loading images:', err));
+        }
+
+        // Choose which function to use based on the file type you have
+        document.addEventListener("DOMContentLoaded", () => {
+            loadImagesFromFile('images.txt');
+        });
+    </script>
+</body>
+</html>

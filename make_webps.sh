@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 
-mkdir -p webps
+mkdir -p image_grid/webps
+
+rm -rf image_grid/images.txt
+touch image_grid/images.txt
 
 for path in `ls traces/*.traceboy`
 do
 	file=$(basename $path)
-	webpfile="webps/${file%.traceboy}.webp"
-
-	if [ ! -f $webpfile ]
+	webpfile="${file%.traceboy}.webp"
+	webppath="image_grid/webps/${webpfile}"
+	
+	if [ ! -f $webppath ]
 	then
-		echo "$webpfile"
-		bin/makevideo "$path" "$webpfile"
+		echo "$webppath"
+		bin/makevideo "$path" "$webppath"
 	fi
+	
+	echo "webps/${webpfile}" >> image_grid/images.txt
+	
 done

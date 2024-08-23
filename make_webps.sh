@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Iterate over all traces in the `traces/` directory and generate an animated
+# WebP for each.
+# These are stored in `image_grid/webps` and added to the `images.txt` file.
+
 mkdir -p image_grid/webps
 
 rm -rf image_grid/images.txt

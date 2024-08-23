@@ -2,7 +2,5 @@ bin/*
 external/sameboy/*
 gen/*
 obj/*
-rom_index/*
-traces/*
 webps/*.webp
 sameboy

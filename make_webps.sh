@@ -5,5 +5,11 @@ mkdir -p webps
 for path in `ls traces/*.traceboy`
 do
 	file=$(basename $path)
-	bin/makevideo "$path" "webps/${file%.traceboy}.webp"
+	webpfile="webps/${file%.traceboy}.webp"
+
+	if [ ! -f $webpfile ]
+	then
+		echo "$webpfile"
+		bin/makevideo "$path" "$webpfile"
+	fi
 done

@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include <sameboy/gb.h>
+#include <sameboy/random.h>
 #include <traceboy.pb-c.h>
 
 #define NELEMS(a) (sizeof(a)/sizeof(a[0]))
@@ -83,6 +84,9 @@ int verify_trace_packet(const TracePacket *trace_packet)
 		printf("Failed to allocate and init GB context\n");
 		return 1;
 	}
+
+	GB_random_set_enabled(false);
+	GB_set_emulate_joypad_bouncing(gb, false);
 
 	GB_set_vblank_callback(gb, (GB_vblank_callback_t) vblank);
 
@@ -167,14 +171,16 @@ int verify_trace_packet(const TracePacket *trace_packet)
 
 	if (end_state_crc32 == trace_packet->end_state_crc32)
 	{
-		printf("end-state CRC match!\n");
+		printf("\033[32;1mend-state CRC match!\n");
 		error = 0;
 	}
 	else
 	{
-		printf("end-state CRC mismatch!\n");
+		printf("\033[31;1mend-state CRC mismatch!\n");
 		error = 1;
 	}
+
+	printf("\033[0m");
 
 end:
 

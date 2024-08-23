@@ -27,14 +27,22 @@ void compute_sha256(uint8_t *buffer, size_t len, uint8_t hash[SHA256_DIGEST_LENG
 }
 
 // Function to dump a buffer to a file with a hash-based filename
-int dump_buffer(uint8_t *buffer, size_t len) {
+int dump_buffer(uint8_t *buffer, size_t len, int unstable) {
     uint8_t hash[SHA256_DIGEST_LENGTH];
     compute_sha256(buffer, len, hash);
 
     // Use the hash string as the filename
     char filename[64];
-	snprintf(filename, sizeof(filename), "traces/%016llx%016llx.traceboy",
-			 ((uint64_t*)hash)[0], ((uint64_t*)hash)[1]);
+	if (!unstable)
+	{
+		snprintf(filename, sizeof(filename), "traces/%016llx%016llx.traceboy",
+				 ((uint64_t*)hash)[0], ((uint64_t*)hash)[1]);
+	}
+	else
+	{
+		snprintf(filename, sizeof(filename), "unstable/%016llx%016llx.traceboy",
+				 ((uint64_t*)hash)[0], ((uint64_t*)hash)[1]);
+	}
 
     FILE *file = fopen(filename, "wb");
     if (file == NULL) {
@@ -82,10 +90,7 @@ int process_packet(void* buffer)
 	printf("  end_state_crc32: %08x\n", trace_packet->end_state_crc32);
 
 	int error = verify_trace_packet(trace_packet);
-	if (!error)
-	{
-		dump_buffer(msg_buffer->data, msg_buffer->size);
-	}
+	dump_buffer(msg_buffer->data, msg_buffer->size, error);
 
 	printf("\n");
 

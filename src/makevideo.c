@@ -41,6 +41,8 @@ int convert_trace_packet(const TracePacket *trace_packet, const char *outfile_na
 		return 1;
 	}
 
+	GB_random_set_enabled(false);
+
 	GB_set_vblank_callback(gb, (GB_vblank_callback_t) vblank);
 	GB_set_rgb_encode_callback(gb, (GB_rgb_encode_callback_t) rgb_encode_callback);
 

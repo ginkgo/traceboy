@@ -91,7 +91,7 @@ int verify_trace_packet(const TracePacket *trace_packet)
 	GB_set_vblank_callback(gb, (GB_vblank_callback_t) vblank);
 
 	{
-		error = GB_load_boot_rom(gb, "external/sameboy/BootROMs/dmg_boot.bin");
+		error = GB_load_boot_rom(gb, "external/SameBoy/build/bin/BootROMs/dmg_boot.bin");
 		if (error)
 		{
 			printf("Failed to load boot ROM\n");

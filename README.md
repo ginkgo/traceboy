@@ -79,10 +79,10 @@ This should build both SameBoy as well as the tracing tools.
 
 Before you can start collecting traces you need to first generate an index of Game Boy ROMs using `gen_rom_index.sh`.
 
-If you have a directory with GB ROMs in some directory `ROMDIR` you can generate an index with:
+If you have a directory with GB ROMs you can generate an index with:
 
 ```
-$ gen_rom_index.sh `find $ROMDIR -iname '*.gb'`
+$ gen_rom_index.sh $ROMDIR/*.gb
 ```
 
 This will insert a symbolic link for each given ROM into the `rom_index` directory. The link's filename is the ROM's

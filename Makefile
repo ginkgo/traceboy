@@ -13,7 +13,7 @@ obj/%.o: src/%.c gen/traceboy.pb-c.h $(SB_BUILD)/include
 obj/%.o: gen/%.c
 	gcc -c $(CFLAGS) -o $@ $<
 
-all: bin/server bin/test_client bin/verify bin/makevideo
+all: bin/server bin/test_client bin/verify bin/makevideo bin/packet_info
 
 clean:
 	rm -rf gen/* bin/* obj/*
@@ -36,6 +36,9 @@ bin/test_client: obj/test_client.o obj/traceboy.pb-c.o $(SB_BUILD)/lib/libsamebo
 
 bin/verify: obj/verify.o obj/verification.o obj/traceboy.pb-c.o $(SB_BUILD)/lib/libsameboy.a
 	gcc $(LFLAGS) obj/verify.o obj/verification.o obj/traceboy.pb-c.o $(SB_BUILD)/lib/libsameboy.a -o bin/verify
+
+bin/packet_info: obj/packet_info.o obj/verification.o obj/traceboy.pb-c.o $(SB_BUILD)/lib/libsameboy.a
+	gcc $(LFLAGS) obj/packet_info.o obj/verification.o obj/traceboy.pb-c.o $(SB_BUILD)/lib/libsameboy.a -o bin/packet_info
 
 bin/makevideo: obj/makevideo.o obj/traceboy.pb-c.o $(SB_BUILD)/lib/libsameboy.a
 	gcc $(LFLAGS) -lwebp -lwebpmux obj/makevideo.o obj/traceboy.pb-c.o $(SB_BUILD)/lib/libsameboy.a -o bin/makevideo

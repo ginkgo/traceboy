@@ -121,6 +121,29 @@ int verify_trace_packet(const TracePacket *trace_packet)
 										  trace_packet->start_state.len);
 	}
 
+	uint32_t start_state_crc32;
+	{
+		uint8_t buffer[1024*1024];
+		size_t len = GB_get_save_state_size(gb);
+		GB_save_state_to_buffer(gb, buffer);
+
+		start_state_crc32 = calc_crc32(len, buffer);
+		printf("start-state CRC: %08x\n", start_state_crc32);
+
+		uint32_t original_start_state_crc32 = calc_crc32(trace_packet->start_state.len, trace_packet->start_state.data);
+
+		printf("original start-state CRC: %08x\n", original_start_state_crc32);
+
+		if (start_state_crc32 != original_start_state_crc32) {
+
+			printf("\033[31;1mstart-state CRC mismatch on load!\n");
+			printf("\033[0m");
+			
+			error = 1;
+			goto end;
+		}
+	}
+	
 	uint32_t pixels[256*256];
 	GB_set_pixels_output(gb, pixels);
 	/* GB_set_rendering_disabled(gb, true); */

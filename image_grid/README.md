@@ -6,7 +6,7 @@ You need to generate the WebPs and `images.txt` file for this to work. To do thi
 
 ```
 $ make -j8
-$ ./make_webps.sh 
+$ scripts/make_webps.sh 
 ```
 
 WebP generation will take a while since it needs to simulate every trace and encode an animated WebP image.

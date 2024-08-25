@@ -82,7 +82,7 @@ Before you can start collecting traces you need to first generate an index of Ga
 If you have a directory with GB ROMs you can generate an index with:
 
 ```
-$ gen_rom_index.sh $ROMDIR/*.gb
+$ scripts/gen_rom_index.sh $ROMDIR/*.gb
 ```
 
 This will insert a symbolic link for each given ROM into the `rom_index` directory. The link's filename is the ROM's

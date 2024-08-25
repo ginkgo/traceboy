@@ -37,9 +37,11 @@ The collected data could be made publically available so people could use it for
 
 ## Open issues
 
-The current system sort of works, but there's still cases where trace packets fail go give deterministic results.
+~~The current system sort of works, but there's still cases where trace packets fail go give deterministic results.
 I'm not completely sure why that is, but it's more common in some games than others.
-It seems like audio memory is most likely to diverge somehow.
+It seems like audio memory is most likely to diverge somehow.~~
+With the most recent set of fixes to my SameBoy fork it _seems_ like I was able to get rid of the divergent state. The main culprits were a `sanitize_state()` function that would be called after loading but not on the running instance itself as well as pending APU state not being completed before saving.
+Doing those just before saving seems to fix the problem.
 
 The way packet creation was added to SameBoy was very haphazard. A proper implementation should clean this up significantly.
 
